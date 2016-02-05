@@ -8,7 +8,7 @@
     "README.md",
     "arduino-manager-config-schema.coffee"
   ],
-  "version": "0.8.01",
+  "version": "0.1.00",
   "homepage": "http://pimatic.org",
   "repository": {
     "type": "git",
@@ -16,6 +16,8 @@
   },
   "configSchema": "arduino-manager-config-schema.coffee",
   "dependencies": {
+    "serialport": "~2.0.6",
+    "avrgirl-arduino": "1.6.5"
   },
   "peerDependencies": {
     "pimatic": "0.8.*"

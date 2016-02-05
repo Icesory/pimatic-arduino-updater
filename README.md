@@ -10,4 +10,4 @@ Every Plugin, which will profit from this behavior must implement the SerialPort
 And it must provide informations for the Arduino and the sourcecode for this.
 Also an function which returns an path to the neu updated source code.
 
-![Schematic](https://raw.githubusercontent.com/Icesory/pimatic-arduino-manager/master/arduino-manager-sch.jpg)
+![Schematic](https://raw.githubusercontent.com/Icesory/pimatic-arduino-manager/master/arduino-manager-sch.jpeg)
