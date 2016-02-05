@@ -1,0 +1,9 @@
+node_modules
+public/assets/
+public/theme/
+public/index.html
+doc/*generated
+compiled
+doc
+
+.js

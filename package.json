@@ -1,0 +1,27 @@
+{
+  "name": "pimatic-arduino-manager",
+  "description": "pimatic plugin to use various 433 MHz devices, sensors and more with an Arduino.",
+  "author": "Ronny Herzberg <ronny_herzberg@web.de>",
+  "main": "arduino-manager",
+  "files": [
+    "arduino-manager.coffee",
+    "README.md",
+    "arduino-manager-config-schema.coffee"
+  ],
+  "version": "0.8.01",
+  "homepage": "http://pimatic.org",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Icesory/pimatic-arduino-manager.git"
+  },
+  "configSchema": "arduino-manager-config-schema.coffee",
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "pimatic": "0.8.*"
+  },
+  "engines": {
+    "node": ">0.8.x",
+    "npm": ">1.1.x"
+  }
+}
