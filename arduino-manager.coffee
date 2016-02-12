@@ -12,39 +12,67 @@ module.exports = (env) ->
   # Require the  bluebird promise library
   Promise = env.require 'bluebird'
   assert = env.require 'cassert'
-  uploader = require 'avrgirl-arduino'
-  serialport = require 'serialport'
+  Uploader = require 'avrgirl-arduino'
+  #serialport = require 'serialport'
 
   #neccessary eventually for avr-gcc
   #spawn = require("child_process").spawn
 
-  serialPorts = {}
-  availablePorts = {}
-  arduinoProperties = {}
+  #serialPorts = {}
+  #availablePorts = {}
+  #arduinoProperties = {}
+
 
   class ArduinoManager extends env.plugins.Plugin
+    registeredPlugins: []
+
     init: (app, @framework, @config) =>
-      env.logger.info("Hello World")
+      env.logger.info("Arduion-Uploader init")
+      #env.logger.info(@framework.pluginManager.pathToPlugin("pimatic-"+@config.plugin))
+      #TODO: create a update site for pimatic-mobile-frontend
+
+    registerPlugin: (pluginName) =>
+      assert typeof pluginName is 'string'
+      env.logger.info("Plugin #{pluginName} is now registered")
+      @registeredPlugins.push pluginName
+      env.logger.info("Registered Plugins: "+@registeredPlugins.join(", "))
+      @checkAllForUpdate()
+
+    checkAllForUpdate:()=>
+      env.logger.info("Check for updates")
+      for pluginName in @registeredPlugins
+        @checkForUpdate(pluginName)
+
+    checkForUpdate:(pluginName) =>
+        plugin = @framework.pluginManager.getPlugin(pluginName)
+        if plugin?
+          arduinoProperties = plugin.arduinoUpdate()
+          if arduinoProperties?
+            console.log arduinoProperties
+            if arduinoProperties.update is true
+              @flashArduino(arduinoProperties, plugin)
+
+
+    flashArduino: (properties, plugin) =>
+      arduino = new Uploader(
+        {
+          board: properties.board,
+          port: properties.port
+        })
+      env.logger.info "Start Arduino flash"
+      arduino.flash(properties.file,(error)->
+        if(error)
+          env.logger.error error
+        else
+          env.logger.info "Arduino flash done"
+          if plugin?
+            plugin.arduinoReady()
+      )
+
+    getSupportedBoards:()=>
+      return ["uno", "nano", "mega", "leonardo", "micro", "duemilanove168", "blend-micro",
+              "tinyduino", "sf-pro-micro", "qduino", "pinoccio", "imuduino", "feather"]
+
 
   ardManager = new ArduinoManager()
-
-  getPort: (pluginName) ->
-    serialPorts[pluginName] = serialport.SerialPort
-    availablePorts[pluginName] = true;
-    return serialPorts[pluginName]
-
-  portAvailable: (pluginName) ->
-    return availablePorts[pluginName]
-  # and return it to the framework.
-
-  setArduino: (pluginName, arduino)->
-    #arduino must be an obejct, which contains the Type and the Port
-    ###
-    {
-      "type": "UNO"
-      "port": "/dev/ttyUSB0"
-    }
-    ###
-    arduinoProperties[pluginName] = arduino
-
   return ardManager
