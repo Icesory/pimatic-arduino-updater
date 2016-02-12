@@ -1,11 +1,17 @@
-# #my-plugin configuration options
-# Declare your config option for your plugin here.
 module.exports = {
-  title: "my plugin config options"
+  title: "pimatic-arduino-uploader"
   type: "object"
   properties:
-    option1:
-      description: "Some option"
-      type: "string"
-      default: "foo"
+    blacklist:
+      description: "Plugins, which are not allowed to register. To blacklist Pimatic-Homeduino you must insert \"homeduino\"."
+      type: "array"
+      format: "table"
+      items:
+        type: "string"
+    autoUpdateBlacklist:
+      description: "Plugins, which are not allowed to automatically update their Arduinos. "
+      type: "array"
+      format: "table"
+      items:
+        type: "string"
 }

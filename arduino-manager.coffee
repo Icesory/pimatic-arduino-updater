@@ -13,14 +13,6 @@ module.exports = (env) ->
   Promise = env.require 'bluebird'
   assert = env.require 'cassert'
   Uploader = require 'avrgirl-arduino'
-  #serialport = require 'serialport'
-
-  #neccessary eventually for avr-gcc
-  #spawn = require("child_process").spawn
-
-  #serialPorts = {}
-  #availablePorts = {}
-  #arduinoProperties = {}
 
 
   class ArduinoManager extends env.plugins.Plugin
@@ -33,27 +25,42 @@ module.exports = (env) ->
 
     registerPlugin: (pluginName) =>
       assert typeof pluginName is 'string'
+      if pluginName in @config.blacklist
+        return false
       env.logger.info("Plugin #{pluginName} is now registered")
       @registeredPlugins.push pluginName
       env.logger.info("Registered Plugins: "+@registeredPlugins.join(", "))
-      @checkAllForUpdate()
+      return true
+      #@checkAllForUpdate()
 
     checkAllForUpdate:()=>
       env.logger.info("Check for updates")
       for pluginName in @registeredPlugins
         @checkForUpdate(pluginName)
 
+    #This function checks if it neccessary to update an arduino for an plugin
     checkForUpdate:(pluginName) =>
-        plugin = @framework.pluginManager.getPlugin(pluginName)
-        if plugin?
-          arduinoProperties = plugin.arduinoUpdate()
-          if arduinoProperties?
-            console.log arduinoProperties
-            if arduinoProperties.update is true
-              @flashArduino(arduinoProperties, plugin)
+      if pluginName not in @registeredPlugins
+        return false
+      plugin = @framework.pluginManager.getPlugin(pluginName)
+      if plugin?
+        arduinoProperties = plugin.arduinoUpdate()
+        if arduinoProperties?
+          console.log arduinoProperties
+          if arduinoProperties.update is true
+            return @_flashArduino(arduinoProperties, plugin)
+      return false
+
+    #Other Plugins can call this function to update their Arduinos when it is necessary.
+    #After an update of the Plugin, or for the Inital flash
+    #The plugin must not be in the autoUpdateBlacklist
+    flashArduino:(properties, plugin) =>
+      if plugin.config.plugin in @config.autoUpdateBlacklist
+        return false
+      return _flashArduino(properties, plugin)
 
 
-    flashArduino: (properties, plugin) =>
+    _flashArduino: (properties, plugin) =>
       arduino = new Uploader(
         {
           board: properties.board,
@@ -63,11 +70,14 @@ module.exports = (env) ->
       arduino.flash(properties.file,(error)->
         if(error)
           env.logger.error error
+          return false
         else
           env.logger.info "Arduino flash done"
           if plugin?
             plugin.arduinoReady()
+          return true
       )
+
 
     getSupportedBoards:()=>
       return ["uno", "nano", "mega", "leonardo", "micro", "duemilanove168", "blend-micro",
