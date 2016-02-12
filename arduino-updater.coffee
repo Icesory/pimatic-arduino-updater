@@ -1,5 +1,5 @@
 #########################################
-#      Arduino management Plugin        #
+#        Arduino update Plugin          #
 # This Plugin allows Pimatic to upload  #
 # new Programms to our arduinos.        #
 #########################################
@@ -15,11 +15,11 @@ module.exports = (env) ->
   Uploader = require 'avrgirl-arduino'
 
 
-  class ArduinoManager extends env.plugins.Plugin
+  class ArduinoUpdater extends env.plugins.Plugin
     registeredPlugins: []
 
     init: (app, @framework, @config) =>
-      env.logger.info("Arduion-Uploader init")
+      env.logger.info("Arduion-Updater init")
       #env.logger.info(@framework.pluginManager.pathToPlugin("pimatic-"+@config.plugin))
       #TODO: create a update site for pimatic-mobile-frontend
 
@@ -84,5 +84,5 @@ module.exports = (env) ->
               "tinyduino", "sf-pro-micro", "qduino", "pinoccio", "imuduino", "feather"]
 
 
-  ardManager = new ArduinoManager()
+  ardManager = new ArduinoUpdater()
   return ardManager

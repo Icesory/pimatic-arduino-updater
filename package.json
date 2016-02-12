@@ -1,22 +1,21 @@
 {
-  "name": "pimatic-arduino-manager",
-  "description": "pimatic plugin to use various 433 MHz devices, sensors and more with an Arduino.",
+  "name": "pimatic-arduino-updater",
+  "description": "pimatic plugin to update Arduinos.",
   "author": "Ronny Herzberg <ronny_herzberg@web.de>",
-  "main": "arduino-manager",
+  "main": "arduino-updater",
   "files": [
-    "arduino-manager.coffee",
+    "arduino-updater.coffee",
     "README.md",
-    "arduino-manager-config-schema.coffee"
+    "arduino-updater-config-schema.coffee"
   ],
   "version": "0.1.00",
   "homepage": "http://pimatic.org",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Icesory/pimatic-arduino-manager.git"
+    "url": "git://github.com/Icesory/pimatic-arduino-updater.git"
   },
-  "configSchema": "arduino-manager-config-schema.coffee",
+  "configSchema": "arduino-updater-config-schema.coffee",
   "dependencies": {
-    "serialport": "~2.0.6",
     "avrgirl-arduino": "1.6.5"
   },
   "peerDependencies": {

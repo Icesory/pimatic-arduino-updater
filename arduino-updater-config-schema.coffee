@@ -1,5 +1,5 @@
 module.exports = {
-  title: "pimatic-arduino-uploader"
+  title: "pimatic-arduino-updater"
   type: "object"
   properties:
     blacklist:
