@@ -1,0 +1,11 @@
+div#arduino-updater-page(data-role='page')
+  div(data-theme=theme.headerSwatch, data-role='header')
+    a(href='#index', data-role='button', data-icon='arrow-l', data-iconpos='left',
+      data-inline='true', data-transition="slide", data-direction="reverse")=__('Back')
+    h3=__('Arduino Updater')
+  div.ui-content.overthrow
+    ul#registered-plugins-list(data-role='listview', data-bind="foreach: registeredPlugins")
+      li
+        span.name(data-bind='text: name')
+        span.buttons
+          a.ui-btn.ui-mini.ui-btn-inline.ui-corner-all(data-bind="click: $parent.onUpdatelicked")=__('Flash')

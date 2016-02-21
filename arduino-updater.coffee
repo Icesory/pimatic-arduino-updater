@@ -21,8 +21,40 @@ module.exports = (env) ->
     init: (app, @framework, @config) =>
       env.logger.info("Arduion-Updater init")
 
-      #env.logger.info(@framework.pluginManager.pathToPlugin("pimatic-"+@config.plugin))
-      #TODO: create a update site for pimatic-mobile-frontend
+      @framework.on "after init", =>
+        mobileFrontend = @framework.pluginManager.getPlugin 'mobile-frontend'
+        if mobileFrontend?
+          mobileFrontend.registerAssetFile 'js', "pimatic-arduino-updater/app/arduino-updater.coffee"
+          mobileFrontend.registerAssetFile 'html', "pimatic-arduino-updater/app/arduino-updater.jade"
+          mobileFrontend.registerAssetFile 'css', "pimatic-arduino-updater/app/arduino-updater.css"
+        else
+          env.logger.warn "Arduion Updater could not find mobile-frontend. Didn't add updater page."
+
+      app.get('/arduino-updater/registerd-plugins', (req, res) =>
+        res.send(@registeredPlugins.map( (name) -> {name: name }))
+      )
+
+      app.post('/arduino-updater/flash/:name', (req, res) =>
+        new Promise( (resolve, reject) =>
+          pluginName = req.params.name
+          plugin = @framework.pluginManager.getPlugin(pluginName)
+          if plugin?
+            plugin.arduinoUpdate(@)
+              .then(resolve, reject)
+          else
+            reject(new Error("Could not find plugin"))
+        ).then( () =>
+          res.send({
+            success: true,
+            message: "Update successful"
+          })
+        ).catch( (error) =>
+          res.send(500, {
+            success: false,
+            message: error.message}
+          )
+        )
+      )
 
     registerPlugin: (pluginName) =>
       assert typeof pluginName is 'string'
