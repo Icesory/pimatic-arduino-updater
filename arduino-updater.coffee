@@ -91,6 +91,10 @@ module.exports = (env) ->
         return false
 
       env.logger.debug("Plugin #{pluginPropertie.name} is now registered")
+
+      pluginPropertie.whiteListState = false
+      if pluginPropertie.name in @config.whitelist
+        pluginPropertie.whiteListState = true
       @registeredPlugins.push pluginPropertie
       #env.logger.debug("Registered Plugins: "+@registeredPlugins.join(", "))
       env.logger.debug(@registeredPlugins)
