@@ -8,4 +8,7 @@ div#arduino-updater-page(data-role='page')
       li
         span.name(data-bind='text: name')
         span.buttons
-          a.ui-btn.ui-mini.ui-btn-inline.ui-corner-all(data-bind="click: $parent.onUpdatelicked")=__('Flash')
+          a.ui-btn.ui-mini.ui-btn-inline.ui-corner-all(data-bind="click: $parent.onUpdateKlicked")=__('Flash')
+        span.checkbox
+          //i dont know why but here will be a "div" insert
+          input(type="checkbox" data-bind="checked: $parent.onCheckboxChange")=__('Automatic updates')

@@ -42,7 +42,7 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
         pimatic.try -> $('#registered-plugins-list').listview('refresh')
       )
 
-      # pimatic.socket.on('messageLogged', tc (entry) => 
+      # pimatic.socket.on('messageLogged', tc (entry) =>
       #   @messages.unshift({
       #     tags: entry.meta.tags
       #     level: entry.level
@@ -63,9 +63,19 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
         @updateFromJs(plugins)
       )
 
-    onUpdatelicked: (plugin) =>
+    onUpdateKlicked: (plugin) =>
       $.ajax({
         url: "/arduino-updater/flash/#{plugin.name}",
+        type: 'POST',
+        global: true
+      }).done(ajaxShowToast)
+      .fail(ajaxAlertFail)
+
+    onCheckboxChange: ()=>
+      console.log "Checkbox klicked"
+      checkboxState = true
+      $.ajax({
+        url: "/arduino-updater/whitelist/#{plugin.name}/#{checkboxState}",
         type: 'POST',
         global: true
       }).done(ajaxShowToast)
