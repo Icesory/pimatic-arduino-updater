@@ -28,7 +28,7 @@ module.exports = (env) ->
           mobileFrontend.registerAssetFile 'html', "pimatic-arduino-updater/app/arduino-updater.jade"
           mobileFrontend.registerAssetFile 'css', "pimatic-arduino-updater/app/arduino-updater.css"
         else
-          env.logger.warn "Arduion Updater could not find mobile-frontend. Didn't add updater page."
+          env.logger.warn "Arduino Updater could not find mobile-frontend. Didn't add updater page."
 
       app.get('/arduino-updater/registerd-plugins', (req, res) =>
         res.send(@registeredPlugins.map( (name) -> {name: name }))
@@ -93,6 +93,7 @@ module.exports = (env) ->
       env.logger.debug("Plugin #{pluginPropertie.name} is now registered")
 
       pluginPropertie.whiteListState = false
+      pluginPropertie.updateRequired = false
       if pluginPropertie.name in @config.whitelist
         pluginPropertie.whiteListState = true
       @registeredPlugins.push pluginPropertie
@@ -138,6 +139,8 @@ module.exports = (env) ->
         return false
       unless pluginName in @config.whitelist
         env.logger.debug("Plugin: #{pluginName} request a Arduino update but isnt whitelisted.")
+        pluginPropertie.updateRequired = true
+        #SEND_TO_GUI
         return false
 
       plugin = @framework.pluginManager.getPlugin(pluginName)
