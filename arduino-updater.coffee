@@ -31,7 +31,7 @@ module.exports = (env) ->
           env.logger.warn "Arduion Updater could not find mobile-frontend. Didn't add updater page."
 
       app.get('/arduino-updater/registerd-plugins', (req, res) =>
-        res.send(@registeredPlugins.map( (name) -> {name: name }))
+        res.send(@registeredPlugins)
       )
 
       app.post('/arduino-updater/flash/:name', (req, res) =>
@@ -40,8 +40,8 @@ module.exports = (env) ->
           plugin = @framework.pluginManager.getPlugin(pluginName)
           if plugin?
             plugin.disconnect()
-            .then(@_flashArduino(pluginName)
-            .then(plugin.connect()))
+            .then( => @_flashArduino(pluginName) )
+            .then( => plugin.connect() )
           else
             reject(new Error("Could not find plugin"))
         ).then( () =>
@@ -135,22 +135,28 @@ module.exports = (env) ->
       env.logger.debug(pluginPropertie)
       unless pluginPropertie?
         env.logger.warn("Not registered Plugin: #{pluginName} request a Arduino update")
-        return false
+        return Promise.resolve(false)
       unless pluginName in @config.whitelist
         env.logger.debug("Plugin: #{pluginName} request a Arduino update but isnt whitelisted.")
-        return false
+        return Promise.resolve(false)
 
       plugin = @framework.pluginManager.getPlugin(pluginName)
       if plugin?
         env.logger.debug("#{pluginName}.disconnect")
-        plugin.disconnect().then(()=>
+        plugin.disconnect().then( () =>
           env.logger.debug("flash")
-          @_flashArduino(pluginName).then(()=>
-            env.logger.debug("#{pluginName}.connect")
-            plugin.connect())).then(()=>
-          return true)
-
-
+          return @_flashArduino(pluginName).catch( (error) =>
+            env.logger.error("Error flashing arduino: #{error.message}")
+            eng.logger.debug(error.stack)
+          )
+        ).then( ()=>
+          env.logger.debug("#{pluginName}.connect")
+          return plugin.connect()
+        ).then(( ) =>
+          return true
+        )
+      else
+        return Promise.resolve(false)
 
 #    flashArduino:(pluginName) =>
 #      unless pluginName in @config.whitelist
