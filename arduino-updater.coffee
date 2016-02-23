@@ -43,9 +43,9 @@ module.exports = (env) ->
           pluginName = req.params.name
           plugin = @framework.pluginManager.getPlugin(pluginName)
           if plugin?
-            plugin.disconnect()
-            .then(@_flashArduino(pluginName)
-            .finally(plugin.connect()))
+            plugin.disconnect().then(()=>
+              @_flashArduino(pluginName).then(()=>
+                plugin.connect()))
           else
             reject(new Error("Could not find plugin"))
         ).then( () =>
