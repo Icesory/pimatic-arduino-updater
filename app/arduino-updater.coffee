@@ -25,18 +25,17 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
   class ArduinoUpdaterViewModel
 
     @mapping = {
-      $default: 'ignore'
       registeredPlugins:
         $key: 'name'
-        $name: 'copy'
-        $board: 'copy'
-        $uploader: 'copy'
-        $port: 'copy'
-        $file: 'copy'
-        $updateRequired: 'observe'
-        $whiteListState: 'observe'
-        $itemOptions:
-          $handler: 'copy'
+        $itemOptions: {
+          name: 'copy'
+          board: 'copy'
+          uploader: 'copy'
+          port: 'copy'
+          file: 'copy'
+          updateRequired: 'observe'
+          whiteListState: 'observe'
+        }
     }
 
 
@@ -85,8 +84,7 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
     onCheckboxChange: (plugin)=>
       console.log("Checkbox klicked")
       console.log(plugin)
-      console.log("Whiteliststate: #{@whiteListState}")
-      console.log(@whiteListState)
+      console.log("Whiteliststate: #{plugin.whiteListState()}")
       #alert(plugin);
       #checkboxState = true
 #      $.ajax({
