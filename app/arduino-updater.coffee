@@ -80,11 +80,14 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
         global: true
       }).done(ajaxShowToast)
       .fail(ajaxAlertFail)
-      return true
+      #return true
 
     onCheckboxChange: (plugin)=>
-      console.log "Checkbox klicked"
-      alert(plugin);
+      console.log("Checkbox klicked")
+      console.log(plugin)
+      console.log("Whiteliststate: #{@whiteListState}")
+      console.log(@whiteListState)
+      #alert(plugin);
       #checkboxState = true
 #      $.ajax({
 #        url: "/arduino-updater/whitelist/#{plugin.name}/#{plugin.whiteListState}",
