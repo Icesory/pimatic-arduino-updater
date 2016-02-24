@@ -6,9 +6,30 @@ div#arduino-updater-page(data-role='page')
   div.ui-content.overthrow
     ul#registered-plugins-list(data-role='listview', data-bind="foreach: registeredPlugins")
       li
-        span.name(data-bind='text: name')
+        div
+          span=__('Plugin: ')
+          span.name(data-bind='text: name')
+        <!-- ko if: updateRequired  -->
+        div
+          span=__('Update available')
+        <!-- /ko -->
         span.buttons
           a.ui-btn.ui-mini.ui-btn-inline.ui-corner-all(data-bind="click: $parent.onUpdateKlicked")=__('Flash')
-        span.checkbox
-          //i dont know why but here will be a "div" insert
-          input(type="checkbox" data-bind="checked: $parent.onCheckboxChange")=__('Automatic updates')
+          div.ui-checkbox(style="display: inline-block !important")
+            label.inline.ui-mini
+              span=__('Automatic updates')
+              //input(type="checkbox" data-bind="checked: whiteListState, click: $parent.onCheckboxChange")
+              input(type="checkbox" data-bind="checked: whiteListState")
+              //input(type="checkbox" data-bind="click: $parent.onCheckboxChange")
+        div
+          span=__('Board: ')
+          span.board(data-bind='text: board')
+        div
+          span=__('Port: ')
+          span.port(data-bind='text: port')
+        div
+          span=__('Uploader: ')
+          span.board(data-bind='text: uploader')
+        div
+          span=__('Hexfile: ')
+          span.board(data-bind='text: file')

@@ -28,6 +28,13 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
       $default: 'ignore'
       registeredPlugins:
         $key: 'name'
+        $name: 'copy'
+        $board: 'copy'
+        $uploader: 'copy'
+        $port: 'copy'
+        $file: 'copy'
+        $updateRequired: 'observe'
+        $whiteListState: 'observe'
         $itemOptions:
           $handler: 'copy'
     }
@@ -41,7 +48,6 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
         @registeredPlugins()
         pimatic.try -> $('#registered-plugins-list').listview('refresh')
       )
-
       # pimatic.socket.on('messageLogged', tc (entry) =>
       #   @messages.unshift({
       #     tags: entry.meta.tags
@@ -51,8 +57,12 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
       #   })
       # )
 
+
     updateFromJs: (data) ->
+      console.log("updateFromJs")
+      console.log(data)
       ko.mapper.fromJS({registeredPlugins: data}, ArduinoUpdaterViewModel.mapping, this)
+
 
     loadRegisteredPlugins: ->
       $.ajax({
@@ -70,20 +80,24 @@ $(document).on("pagecreate", '#arduino-updater-page', tc (event) ->
         global: true
       }).done(ajaxShowToast)
       .fail(ajaxAlertFail)
+      return true
 
-    onCheckboxChange: ()=>
+    onCheckboxChange: (plugin)=>
       console.log "Checkbox klicked"
-      checkboxState = true
-      $.ajax({
-        url: "/arduino-updater/whitelist/#{plugin.name}/#{checkboxState}",
-        type: 'POST',
-        global: true
-      }).done(ajaxShowToast)
-      .fail(ajaxAlertFail)
+      alert(plugin);
+      #checkboxState = true
+#      $.ajax({
+#        url: "/arduino-updater/whitelist/#{plugin.name}/#{plugin.whiteListState}",
+#        type: 'POST',
+#        global: true
+#      }).done(ajaxShowToast)
+#      .fail(ajaxAlertFail)
+      return true
 
   try
     pimatic.pages.arduinoUpdater = arduinoUpdaterPage = new ArduinoUpdaterViewModel()
     ko.applyBindings(arduinoUpdaterPage, $('#arduino-updater-page')[0])
+    #arduinoUpdaterPage.registeredPlugins.whiteListState.subscribe(@onCheckboxChangen(update))
   catch e
     TraceKit.report(e)
   return

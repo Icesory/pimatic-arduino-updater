@@ -13,10 +13,13 @@ module.exports = (env) ->
   Promise = env.require 'bluebird'
   assert = env.require 'cassert'
   Uploader = require 'avrgirl-arduino'
+  fs = require('fs')
   Promise.promisifyAll(Uploader.prototype)
 
   class ArduinoUpdater extends env.plugins.Plugin
     registeredPlugins: []
+    uploaders=["uno", "nano", "mega", "leonardo", "micro", "duemilanove168", "blend-micro",
+              "tinyduino", "sf-pro-micro", "qduino", "pinoccio", "imuduino", "feather"]
 
     init: (app, @framework, @config) =>
       #env.logger.info("Arduion-Updater init")
@@ -28,7 +31,7 @@ module.exports = (env) ->
           mobileFrontend.registerAssetFile 'html', "pimatic-arduino-updater/app/arduino-updater.jade"
           mobileFrontend.registerAssetFile 'css', "pimatic-arduino-updater/app/arduino-updater.css"
         else
-          env.logger.warn "Arduion Updater could not find mobile-frontend. Didn't add updater page."
+          env.logger.warn "Arduino Updater could not find mobile-frontend. Didn't add updater page."
 
       app.get('/arduino-updater/registerd-plugins', (req, res) =>
         res.send(@registeredPlugins)
@@ -84,6 +87,11 @@ module.exports = (env) ->
 
     registerPlugin: (pluginPropertie) =>
       assert typeof pluginPropertie is "object"
+      assert typeof pluginPropertie.name is "string"
+      assert typeof pluginPropertie.port is "string"
+      assert typeof pluginPropertie.board is "string"
+      assert typeof pluginPropertie.file is "string"
+      assert pluginPropertie.uploader in uploaders
 
       plugin = @framework.pluginManager.getPlugin(pluginPropertie.name)
       unless plugin?
@@ -93,11 +101,23 @@ module.exports = (env) ->
       env.logger.debug("Plugin #{pluginPropertie.name} is now registered")
 
       pluginPropertie.whiteListState = false
+      pluginPropertie.updateRequired = false
       if pluginPropertie.name in @config.whitelist
         pluginPropertie.whiteListState = true
+
+      #env.logger.debug(@config.alternativeHexfiles)
+      if @config.alternativeHexfiles[pluginPropertie.name]?
+        env.logger.debug("Alternative hexfile path")
+        if @_checkFileExist(@config.alternativeHexfiles[pluginPropertie.name])
+          env.logger.debug("Override hexfile path for Plugin #{pluginPropertie.name}")
+          pluginPropertie.path=@config.alternativeHexfiles[pluginPropertie.name]
+        else
+          env.logger.error("Alternative hexfile:#{@config.alternativeHexfiles[pluginPropertie.name]}"+
+                           " for Plugin:#{pluginPropertie.name} dosn´t exist.")
+
       @registeredPlugins.push pluginPropertie
       #env.logger.debug("Registered Plugins: "+@registeredPlugins.join(", "))
-      env.logger.debug(@registeredPlugins)
+      #env.logger.debug(@registeredPlugins)
       return true
 
 
@@ -138,8 +158,9 @@ module.exports = (env) ->
         return Promise.resolve(false)
       unless pluginName in @config.whitelist
         env.logger.debug("Plugin: #{pluginName} request a Arduino update but isnt whitelisted.")
+        pluginPropertie.updateRequired = true #SEND_TO_GUI
+        env.logger.debug(@registeredPlugins)
         return Promise.resolve(false)
-
       plugin = @framework.pluginManager.getPlugin(pluginName)
       if plugin?
         env.logger.debug("#{pluginName}.disconnect")
@@ -169,7 +190,7 @@ module.exports = (env) ->
       pluginPropertie = @_getPluginPropertie(pluginName)
       arduino = new Uploader(
         {
-          board: pluginPropertie.board,
+          board: pluginPropertie.uploader,
           port: pluginPropertie.port,
           debug:true
         })
@@ -183,10 +204,14 @@ module.exports = (env) ->
         if pluginPropertie.name is pluginName
           return pluginPropertie
 
+    _checkFileExist:(path)=>
+      try
+        return fs.statSync(path).isFile()
+      catch e
+        return false
 
     getSupportedBoards:()=>
-      return ["uno", "nano", "mega", "leonardo", "micro", "duemilanove168", "blend-micro",
-              "tinyduino", "sf-pro-micro", "qduino", "pinoccio", "imuduino", "feather"]
+      return uploaders
 
 
   ardManager = new ArduinoUpdater()
