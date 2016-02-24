@@ -22,8 +22,6 @@ module.exports = (env) ->
               "tinyduino", "sf-pro-micro", "qduino", "pinoccio", "imuduino", "feather"]
 
     init: (app, @framework, @config) =>
-      #env.logger.info("Arduion-Updater init")
-
       @framework.on "after init", =>
         mobileFrontend = @framework.pluginManager.getPlugin 'mobile-frontend'
         if mobileFrontend?
@@ -109,9 +107,7 @@ module.exports = (env) ->
       if pluginPropertie.name in @config.whitelist
         pluginPropertie.whiteListState = true
 
-      #env.logger.debug(@config.alternativeHexfiles)
       if @config.alternativeHexfiles[pluginPropertie.name]?
-        env.logger.debug("Alternative hexfile path")
         if @_checkFileExist(@config.alternativeHexfiles[pluginPropertie.name])
           env.logger.debug("Override hexfile path for Plugin #{pluginPropertie.name}")
           pluginPropertie.path=@config.alternativeHexfiles[pluginPropertie.name]
@@ -120,32 +116,10 @@ module.exports = (env) ->
                            " for Plugin:#{pluginPropertie.name} dosn´t exist.")
 
       @registeredPlugins.push pluginPropertie
-      #env.logger.debug("Registered Plugins: "+@registeredPlugins.join(", "))
-      #env.logger.debug(@registeredPlugins)
       return true
-
-
-#    checkAllForUpdate:()=>
-#      env.logger.debug("Check for updates")
-#      for pluginName in @registeredPlugins
-#        @checkForUpdate(pluginName)
-
-#    #This function checks if it neccessary to update an arduino for an plugin
-#    checkForUpdate:(pluginName) =>
-#      if pluginName not in @registeredPlugins
-#        return false
-#      plugin = @framework.pluginManager.getPlugin(pluginName)
-#      if plugin?
-#        plugin.arduinoUpdate(@).catch( (error) =>
-#          env.logger.error error
-#        )
-#      return false
 
     autoUpdateAllow: (pluginName)=>
       assert typeof pluginName is 'string'
-#      env.logger.debug("autoUpdateAllow function")
-#      env.logger.debug("whitelist: #{@config.whitelist}")
-#      env.logger.debug("pluginName: #{pluginName}")
       if pluginName in @config.whitelist
         return true
       return false
@@ -182,12 +156,6 @@ module.exports = (env) ->
         )
       else
         return Promise.resolve(false)
-
-#    flashArduino:(pluginName) =>
-#      unless pluginName in @config.whitelist
-#        return Promise.resolve(false)
-#      env.logger.info "Start Arduino flash for #{plugin.config.plugin}"
-#      return @_flashArduino(properties)
 
     _flashArduino: (pluginName) =>
       assert typeof pluginName is "string"
