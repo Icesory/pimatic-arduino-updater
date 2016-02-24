@@ -63,15 +63,15 @@ module.exports = (env) ->
           pluginName = req.params.name
           whiteListState = req.params.state
           pluginPropertie = @_getPluginPropertie(pluginName)
-          if whiteListState
+          if whiteListState is 'true'
             unless pluginName in @config.whitelist
               @config.whitelist.push(pluginName)
             pluginPropertie.whiteListState=true
             env.logger.debug("#{pluginName} added to whitelist")
           else
             idx = @config.whitelist.indexOf(pluginName)
-            if idx not -1
-              @config.splice(idx,1)
+            if idx >= 0
+              @config.whitelist.splice(idx,1)
               pluginPropertie.whiteListState=false
               env.logger.debug("#{pluginName} removed from whitelist")
           resolve()
