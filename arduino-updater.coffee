@@ -39,23 +39,32 @@ module.exports = (env) ->
         new Promise( (resolve, reject) =>
           pluginName = req.params.name
           plugin = @framework.pluginManager.getPlugin(pluginName)
+          pluginPropertie = @_getPluginPropertie(pluginName)
+          if pluginPropertie.flashInprogress
+            resolve()
           if plugin?
             plugin.disconnect()
             .then( => @_flashArduino(pluginName) )
             .then( => plugin.connect() )
           else
             reject(new Error("Could not find plugin"))
-        ).then( () =>
-          res.send({
-            success: true,
-            message: "Update successful"
-          })
-        ).catch( (error) =>
-          res.send(500, {
-            success: false,
-            message: error.message}
-          )
         )
+        res.send({
+          success: true,
+          #message: "Flash startet"
+        })
+#        .then( () =>
+#          res.send({
+#            success: true,
+#            message: "Update successful"
+#          })
+#        )
+#        .catch( (error) =>
+#          res.send(500, {
+#            success: false,
+#            message: error.message}
+#          )
+#        )
       )
 
       app.post('/arduino-updater/whitelist/:name/:state', (req, res) =>
@@ -102,6 +111,7 @@ module.exports = (env) ->
 
       env.logger.debug("Plugin #{pluginPropertie.name} is now registered")
 
+      pluginPropertie.flashInprogress = false
       pluginPropertie.whiteListState = false
       pluginPropertie.updateRequired = false
       if pluginPropertie.name in @config.whitelist
@@ -160,6 +170,7 @@ module.exports = (env) ->
     _flashArduino: (pluginName) =>
       assert typeof pluginName is "string"
       pluginPropertie = @_getPluginPropertie(pluginName)
+      pluginPropertie.flashInprogress = true
       arduino = new Uploader(
         {
           board: pluginPropertie.uploader,
@@ -168,8 +179,12 @@ module.exports = (env) ->
         })
       env.logger.info "Start Arduino flash for #{pluginName}"
       return arduino.flashAsync(pluginPropertie.file)
-        .then( () => env.logger.info "Arduino flash done" )
+        .then( () =>
+          env.logger.info "Arduino flash done" )
         .catch( (error) => env.logger.error error )
+        .finally( ()=>
+          pluginPropertie.flashInprogress = false
+        )
 
     _getPluginPropertie:(pluginName)=>
       for pluginPropertie in @registeredPlugins
