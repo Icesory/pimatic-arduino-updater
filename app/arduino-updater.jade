@@ -14,10 +14,10 @@ div#arduino-updater-page(data-role='page')
           span=__('Update available')
         <!-- /ko -->
         span.buttons
-          a.inline.ui-btn.ui-mini.ui-btn-inline.ui-corner-all(data-bind="")=__('Flash')
+          a.inline.ui-btn.ui-mini.ui-btn-inline.ui-corner-all(data-bind="click: $parent.onUpdateKlicked")=__('Flash')
           div.inline.ui-mini.ui-checkbox
-            label.ui-btn.ui-corner-all.ui-btn-inherit.ui-btn-icon-left(data-bind="click: $root.onCheckboxChange")=__('Automatic updates')
-            input(type="checkbox", data-bind="jqmchecked: whiteListState, click: $parent.onUpdateKlicked" data-enhanced="true")
+            label.ui-btn.ui-corner-all.ui-btn-inherit.ui-btn-icon-left()=__('Automatic updates')
+            input(type="checkbox", data-bind="jqmchecked: whiteListState, click: $root.onCheckboxChange" data-enhanced="true")
         div
           span=__('Board: ')
           span.board(data-bind='text: board')
