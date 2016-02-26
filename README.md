@@ -3,7 +3,6 @@
 
 Plugin to update the Software for every "Arduino" connected to Pimatic.
 
-This handles software updates on our Arduinos.
 ![Schematic](https://raw.githubusercontent.com/Icesory/pimatic-arduino-manager/master/arduino-updater-sch.jpg)
 
 ### For Users
