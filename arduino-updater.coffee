@@ -29,7 +29,7 @@ module.exports = (env) ->
           mobileFrontend.registerAssetFile 'html', "pimatic-arduino-updater/app/arduino-updater.jade"
           mobileFrontend.registerAssetFile 'css', "pimatic-arduino-updater/app/arduino-updater.css"
         else
-          env.logger.warn "Arduino Updater could not find mobile-frontend. Didn't add updater page."
+          @_debugOutput("Arduino Updater could not find mobile-frontend. Didn't add updater page.")
 
       app.get('/arduino-updater/registerd-plugins', (req, res) =>
         res.send(@registeredPlugins)
@@ -76,13 +76,13 @@ module.exports = (env) ->
             unless pluginName in @config.whitelist
               @config.whitelist.push(pluginName)
             pluginPropertie.whiteListState=true
-            env.logger.debug("#{pluginName} added to whitelist")
+            @_debugOutput("#{pluginName} added to whitelist")
           else
             idx = @config.whitelist.indexOf(pluginName)
             if idx >= 0
               @config.whitelist.splice(idx,1)
               pluginPropertie.whiteListState=false
-              env.logger.debug("#{pluginName} removed from whitelist")
+              @_debugOutput("#{pluginName} removed from whitelist")
           resolve()
         ).then( () =>
           res.send({
@@ -109,7 +109,7 @@ module.exports = (env) ->
         env.logger.error("Plugin #{pluginPropertie.name} does not exist!")
         return false
 
-      env.logger.debug("Plugin #{pluginPropertie.name} is now registered")
+      @_debugOutput("Plugin #{pluginPropertie.name} is now registered")
 
       pluginPropertie.flashInprogress = false
       pluginPropertie.whiteListState = false
@@ -119,7 +119,7 @@ module.exports = (env) ->
 
       if @config.alternativeHexfiles[pluginPropertie.name]?
         if @_checkFileExist(@config.alternativeHexfiles[pluginPropertie.name])
-          env.logger.debug("Override hexfile path for Plugin #{pluginPropertie.name}")
+          @_debugOutput("Override hexfile path for Plugin #{pluginPropertie.name}")
           pluginPropertie.path=@config.alternativeHexfiles[pluginPropertie.name]
         else
           env.logger.error("Alternative hexfile:#{@config.alternativeHexfiles[pluginPropertie.name]}"+
@@ -145,21 +145,22 @@ module.exports = (env) ->
         env.logger.warn("Not registered Plugin: #{pluginName} request a Arduino update")
         return Promise.resolve(false)
       unless pluginName in @config.whitelist
-        env.logger.debug("Plugin: #{pluginName} request a Arduino update but isnt whitelisted.")
-        pluginPropertie.updateRequired = true #SEND_TO_GUI
+        @_debugOutput("Plugin: #{pluginName} request a Arduino update but isnt whitelisted.")
+        pluginPropertie.updateRequired = true #For GUI
         env.logger.debug(@registeredPlugins)
         return Promise.resolve(false)
       plugin = @framework.pluginManager.getPlugin(pluginName)
       if plugin?
         env.logger.debug("#{pluginName}.disconnect")
-        plugin.disconnect().then( () =>
-          env.logger.debug("flash")
+        plugin.disconnect()
+        .then( () =>
+          env.logger.debug("flash") #This line is not executed
           return @_flashArduino(pluginName).catch( (error) =>
             env.logger.error("Error flashing arduino: #{error.message}")
             eng.logger.debug(error.stack)
           )
         ).then( ()=>
-          env.logger.debug("#{pluginName}.connect")
+          env.logger.debug("#{pluginName}.connect") #This line is not executed
           return plugin.connect()
         ).then(( ) =>
           return true
@@ -175,7 +176,7 @@ module.exports = (env) ->
         {
           board: pluginPropertie.uploader,
           port: pluginPropertie.port,
-          debug:true
+          debug: @config.debug
         })
       env.logger.info "Start Arduino flash for #{pluginName}"
       return arduino.flashAsync(pluginPropertie.file)
@@ -196,6 +197,10 @@ module.exports = (env) ->
         return fs.statSync(path).isFile()
       catch e
         return false
+
+    _debugOutput:(string)=>
+      if @config.debug
+        env.logger.debug(string)
 
     getSupportedBoards:()=>
       return uploaders

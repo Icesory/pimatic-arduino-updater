@@ -13,5 +13,9 @@ module.exports = {
       description: "Alternative hexfile paths."
       type: "object"
       default: {}
+    debug:
+      description: "Enables the debug output"
+      type: "boolean"
+      default: false
 
 }
