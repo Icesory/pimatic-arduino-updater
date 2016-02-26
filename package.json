@@ -17,7 +17,8 @@
   },
   "configSchema": "arduino-updater-config-schema.coffee",
   "dependencies": {
-    "avrgirl-arduino": "1.6.5"
+    "avrgirl-arduino": "1.6.5",
+    "bluebird": "~2.10.2"
   },
   "peerDependencies": {
     "pimatic": "0.8.*"
