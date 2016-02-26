@@ -8,6 +8,7 @@
     "README.md",
     "arduino-updater-config-schema.coffee"
   ],
+  "license": "GPL-2.0",
   "version": "0.1.0",
   "homepage": "http://pimatic.org",
   "repository": {
