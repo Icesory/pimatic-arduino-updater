@@ -138,7 +138,7 @@ module.exports = (env) ->
     #After an update of the Plugin, or for the Inital flash
     #The plugin must  be in the whitelist
     requestArduinoUpdate: (pluginName) =>
-      env.logger.debug("ArduinoUpdate request from #{pluginName}")
+      @_debugOutput("ArduinoUpdate request from #{pluginName}")
       pluginPropertie = @_getPluginPropertie(pluginName)
       env.logger.debug(pluginPropertie)
       unless pluginPropertie?
@@ -151,16 +151,16 @@ module.exports = (env) ->
         return Promise.resolve(false)
       plugin = @framework.pluginManager.getPlugin(pluginName)
       if plugin?
-        env.logger.debug("#{pluginName}.disconnect")
+        @_debugOutput("#{pluginName}.disconnect")
         plugin.disconnect()
         .then( () =>
-          env.logger.debug("flash") #This line is not executed
+          @_debugOutput("flash") #This line is not executed
           return @_flashArduino(pluginName).catch( (error) =>
             env.logger.error("Error flashing arduino: #{error.message}")
             eng.logger.debug(error.stack)
           )
         ).then( ()=>
-          env.logger.debug("#{pluginName}.connect") #This line is not executed
+          @_debugOutput("#{pluginName}.connect") #This line is not executed
           return plugin.connect()
         ).then(( ) =>
           return true
@@ -171,6 +171,8 @@ module.exports = (env) ->
     _flashArduino: (pluginName) =>
       assert typeof pluginName is "string"
       pluginPropertie = @_getPluginPropertie(pluginName)
+      if pluginPropertie.flashInprogress is true
+        return Promise.reject()
       pluginPropertie.flashInprogress = true
       arduino = new Uploader(
         {
