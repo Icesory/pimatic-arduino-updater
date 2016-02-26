@@ -43,9 +43,14 @@ module.exports = (env) ->
           if pluginPropertie.flashInprogress
             resolve()
           if plugin?
+            @_debugOutput("Manual: #{pluginName}.disconnect")
             plugin.disconnect()
-            .then( => @_flashArduino(pluginName) )
-            .then( => plugin.connect() )
+            .then( =>
+              @_debugOutput("Manual: flash")
+              @_flashArduino(pluginName) )
+            .then( =>
+              @_debugOutput("Manual: #{pluginName}.connect")
+              plugin.connect() )
           else
             reject(new Error("Could not find plugin"))
         )
@@ -151,16 +156,16 @@ module.exports = (env) ->
         return Promise.resolve(false)
       plugin = @framework.pluginManager.getPlugin(pluginName)
       if plugin?
-        @_debugOutput("#{pluginName}.disconnect")
+        @_debugOutput("Auto: #{pluginName}.disconnect")
         plugin.disconnect()
         .then( () =>
-          @_debugOutput("flash") #This line is not executed
+          @_debugOutput("Auto: flash")
           return @_flashArduino(pluginName).catch( (error) =>
             env.logger.error("Error flashing arduino: #{error.message}")
             eng.logger.debug(error.stack)
           )
         ).then( ()=>
-          @_debugOutput("#{pluginName}.connect") #This line is not executed
+          @_debugOutput("Auto: #{pluginName}.connect")
           return plugin.connect()
         ).then(( ) =>
           return true
