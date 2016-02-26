@@ -1,8 +1,4 @@
-#NOT RELEASED! Still in development
-
-
-
-##pimatic-arduino-manager
+##Pimatic-Arduino-Updater
 =======================
 
 Plugin to update the Software for every "Arduino" connected to Pimatic.
@@ -21,35 +17,24 @@ After that all Plugins which supports the arduino-updater can now update the sof
       "plugin": "arduino-updater"
     }
 ```
+The pimatic-arduino-updater implements a GUI into the mobile-frontend. In this page you can see all
+registered plugins, with their arduino configs. You can also force a manual update.
 
 ####You like control?
 
-You can add a plugin to the blacklist and it isnt allowed to upload new sketch files.
+In the GUI you can allow automatically updates.
+These accesses are stored in the whitelist of arduino-updater.
 ```json
     {
       "plugin": "arduino-updater",
-      "blacklist": [
+      "whitelist": [
         "rflink",
         "homeduino"
       ]
     }
 ```
-A little bit to hard?
-Alternativly you can block plugins from the automatic functions.
-Now you must allow every update in the GUI.
-```json
-    {
-      "plugin": "arduino-updater",
-      "blacklist": [
-        "rflink"
-      ],
-      "autoUpdateBlacklist": [
-        "homeduino"
-      ]
-    }
-```
 
-Did you install arduino-updater all plugins, which support it should ask now for an
+Did you install arduino-updater all plugins, which support it, should ask now for an
 specific arduino board.
 
 ```json
@@ -67,13 +52,32 @@ specific arduino board.
 ```
 The plguin should provide you a list with supportet boards. RFLink for example supports only Arduino Mega boards.
 
+You want to modify your Arduino sketch and want to upload it to your arduino?
+In the arduino-updater config, you can override the hexfile path for your purposes.
+```json
+    {
+      "plugin": "arduino-updater",
+      "whitelist": [
+        "homeduino"
+      ],
+      "alternativeHexfiles": {
+        "homeduino": "/home/pi/blink.hex"
+      },
+      "debug": true
+    }
+```
+
 ### For Developer
 =======================
 
-Your plugin must provide some functins and it must register it self in arduino-updater to got recognized.
+Your plugin must provide some functions and it must register it self in arduino-updater to got recognized.
 
-Following the example fo Pimatic-Homeduino
+Following the example for Pimatic-Homeduino
 ```coffeescript
+    #This a nice way to get your plugin path
+    @pluginPath = @framework.pluginManager.pathToPlugin("pimatic-"+@config.plugin)
+
+
     _registerArduUpdater:()=>
       #Check for real Arduino config
       if @config.driver is "serialport"
@@ -98,35 +102,38 @@ Following the example fo Pimatic-Homeduino
                               "Supported boards are: #{boards.join(", ")}")
             #register this plugin to arduino-updater
             else
-              #returns true for success and false for failure(blacklist)
-              @arduUpdaterReg = arduUpdater.registerPlugin(@config.plugin)
+              #This is your registration
+              pluginProperties = {
+                name: @config.plugin
+                port: @config.driverOptions.serialDevice
+                board: @config.driverOptions.board
+                uploader: @supportedArduBoards[@config.driverOptions.board]
+                file: @pluginPath+"/arduino/Homeduino_"+@config.driverOptions.board+".hex"
+              }
+              #returns true for success and false for an wrong pluginPropertie
+              @arduUpdaterReg = arduUpdater.registerPlugin(pluginProperties)
+              #returns the state of your whitelist entry.
+              @autoUpdate = arduUpdater.autoUpdateAllow(@config.plugin)
 ```
 
-Your plugin must also provide an special function called "arduinoUpdate". This function is called by the arduino-updater in case of User interaction.
+Your plugin must also provide two functions called "disconnect" and "connect". The disconnect function
+must return a Promise which disconnects your serialport.
 
 ```coffeescript
-    #This function will be called from the arduino-updater to determin a necessary update
-    arduinoUpdate:()=>
-      #Generate Path to hexfiles. First get this plugin path
-      pluginPath = @framework.pluginManager.pathToPlugin("pimatic-"+@config.plugin)
-      hexFilePath = pluginPath+"/arduino/Homeduino_"+@config.driverOptions.board+".hex"
-      state = {
-        update:false
-        port: @config.driverOptions.serialDevice
-        board: @supportedArduBoards[@config.driverOptions.board]
-        file: hexFilePath
-      }
+    disconnect:()=>
+      return @nextAction( =>
+        # Give the board some more time before disconnect
+        return Promise.delay(2000).then( =>
+          return @board.disconnect()
+        )
+      )
 
-      #Your plugin should determine if it neccessary to update the arduino
-      #If true then disconnect your serial port! HIGHLY Important
-      #and change the update state to true. arduino-updater will now update your arduino for you
-      if UPDATE
-        @board.disconnect()
-        state.update = true
-
-      return state
+    connect:()=>
+      @_conectToBoard()
 ```
-#####This is still in development. The callback isnt implemente at the moment!!
+
+
+####Hexfiles
 
 Your plugin must provide also ALL possible hex files for all Arduinos. To simplifie this @leader21
 has created an bash script, which compiles your arduino .ino sketch to all defined boards.
@@ -239,10 +246,22 @@ plugin or can be get from arduino-updater.
 ```
 
 You can now simple pass the user defined board tag to this mapping and you get the neccessary
-uploade type.
+uploader type.
 
 ```coffeescript
 @supportedArduBoards[@config.driverOptions.board]
 ```
 
-TODO more!
+You can activate the debug output for arduino-uploader in the plugin config.
+```json
+    {
+      "plugin": "arduino-updater",
+      "whitelist": [
+        "homeduino"
+      ],
+      "alternativeHexfiles": {
+        "homeduino": "/home/pi/blink.hex"
+      },
+      "debug": true
+    }
+```
