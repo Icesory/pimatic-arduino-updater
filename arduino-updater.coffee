@@ -47,10 +47,12 @@ module.exports = (env) ->
             plugin.disconnect()
             .then( =>
               @_debugOutput("Manual: flash")
-              @_flashArduino(pluginName) )
-            .then( =>
-              @_debugOutput("Manual: #{pluginName}.connect")
-              plugin.connect() )
+              @_flashArduino(pluginName)
+              .then( =>
+                @_debugOutput("Manual: #{pluginName}.connect")
+                plugin.connect()
+              )
+            )
           else
             reject(new Error("Could not find plugin"))
         )
@@ -130,6 +132,7 @@ module.exports = (env) ->
           env.logger.error("Alternative hexfile:#{@config.alternativeHexfiles[pluginPropertie.name]}"+
                            " for Plugin:#{pluginPropertie.name} dosn´t exist.")
 
+      @_debugOutput(pluginPropertie)
       @registeredPlugins.push pluginPropertie
       return true
 
